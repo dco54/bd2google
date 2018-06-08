@@ -13,15 +13,15 @@ struct node {
     bool leaf;
     bool isRoot;
     node *par;
-    vector<int>value;
+    vector<float>value;
     vector<node*>child;
 
     node *last;
 };
 
-node* getTargetNode(node *tNode, int val){
+node* getTargetNode(node *tNode, float val){
     if(tNode->leaf) return tNode;
-    int i;
+    float i;
     for(i=0;i<tNode->value.size();i++){
         if(tNode->value[i]>val) break;
     }
@@ -40,7 +40,7 @@ node* getNewNode(bool isLeaf,bool isRoot){
 
 
 
-void insertInParentNode(node *n, int kprime, node *nprime){
+void insertInParentNode(node *n, float kprime, node *nprime){
     if(n->isRoot){
         Root = getNewNode(false,true);
         n->isRoot=false;
@@ -52,14 +52,14 @@ void insertInParentNode(node *n, int kprime, node *nprime){
         nprime->par = Root;
     }else{
         node *p = n->par;
-        int i;
+        float i;
         for(i=0;i<p->value.size();i++){
             if(p->value[i]>kprime) break;
         }
-        int tmpK;
+        float tmpK;
         node *tmpP;
 
-        for(int j = i; j<p->value.size(); j++){
+        for(float j = i; j<p->value.size(); j++){
             tmpK = p->value[j];
             tmpP = p->child[j+1];
 
@@ -78,8 +78,8 @@ void insertInParentNode(node *n, int kprime, node *nprime){
 
         if(p->child.size()>nPointer){
             node *pprime = getNewNode(false,false);
-            int nbytwoceil = (nPointer+1)/2;
-            int kdoubleprime = p->value[nbytwoceil];
+            float nbytwoceil = (nPointer+1)/2;
+            float kdoubleprime = p->value[nbytwoceil];
             for(i = nbytwoceil+1; i<p->value.size();i++){
                 pprime->child.push_back(p->child[i]);
                 p->child[i]->par = pprime;
@@ -99,15 +99,15 @@ void insertInParentNode(node *n, int kprime, node *nprime){
 }
 
 
-void insertInLeafNode(node *leafNode, int k, node *p){
-    int i;
+void insertInLeafNode(node *leafNode, float k, node *p){
+    float i;
     for(i=0;i<leafNode->value.size();i++){
         if(k<leafNode->value[i]) break;
     }
-    int tmpK;
+    float tmpK;
     node *tmpP;
 
-    for(int j = i; j<leafNode->value.size(); j++){
+    for(float j = i; j<leafNode->value.size(); j++){
         tmpP = leafNode->child[j];
         tmpK = leafNode->value[j];
 
@@ -123,41 +123,41 @@ void insertInLeafNode(node *leafNode, int k, node *p){
 }
 
 
-void insert2(int k, node *p){
+void insert2(float k, node *p){
     node *leafNode;
     if(Root==NULL){
         Root = getNewNode(true,true);
         leafNode = Root;
     }else leafNode = getTargetNode(Root,k);
 
-    int keyValueCount = leafNode->value.size();
+    float keyValueCount = leafNode->value.size();
     if(keyValueCount<nVal) insertInLeafNode(leafNode,k,p);
     else{
         node* leafNode2 = getNewNode(true,false);
         insertInLeafNode(leafNode,k,p);
         leafNode2->last = leafNode->last;
         leafNode->last=leafNode2;
-        int nbytwoceil = (nPointer+1)/2;
+        float nbytwoceil = (nPointer+1)/2;
 
-        for(int i = nbytwoceil; i<nPointer ; i++){
+        for(float i = nbytwoceil; i<nPointer ; i++){
             leafNode2->child.push_back(leafNode->child[i]);
             leafNode2->value.push_back(leafNode->value[i]);
         }
         leafNode->value.erase(leafNode->value.begin()+nbytwoceil,leafNode->value.end());
         leafNode->child.erase(leafNode->child.begin()+nbytwoceil,leafNode->child.end());
 
-        int kprime = leafNode2->value[0];
+        float kprime = leafNode2->value[0];
         insertInParentNode(leafNode,kprime,leafNode2);
     }
 }
 
 void valueOfNodeInBox(node* tNode){
     printf(" [");
-    int i ;
+    float i ;
      for(i=0; i<tNode->value.size()-1;i++){
-        printf("%d|",tNode->value[i]);
+        printf("%f|",tNode->value[i]);
     }
-    if(tNode->value.size()>0) printf("%d]",tNode->value[i]);
+    if(tNode->value.size()>0) printf("%f]",tNode->value[i]);
     //printf(" ");
 }
 
@@ -185,7 +185,7 @@ void bfsTraverse(node *tNode){
         valueOfNodeInBox(temp);
         //printf(" printed temp ");
         if(p.nl) printf("\n");
-        int i;
+        float i;
         if(!temp->leaf){
         for(i=0;i<temp->child.size()-1;i++){
             q.push(pNode(temp->child[i],false));
@@ -198,8 +198,8 @@ void bfsTraverse(node *tNode){
 
     }
 }
-bool valueOfNodeInBox1(node* tNode,int value){
-    int i ;
+bool valueOfNodeInBox1(node* tNode,float value){
+    float i ;
      for(i=0; i<tNode->value.size()-1;i++){
         if (tNode->value[i]==value)    return true;
     }
@@ -207,7 +207,7 @@ bool valueOfNodeInBox1(node* tNode,int value){
 }
 
 
-bool Search(node *tNode,int value){
+bool Search(node *tNode,float value){
 
     q.push(pNode(tNode,true));
     while(!q.empty()){
@@ -219,7 +219,7 @@ bool Search(node *tNode,int value){
 
         //printf(" printed temp ");
         if(p.nl) printf("");
-        int i;
+        float i;
         if(!temp->leaf){
         for(i=0;i<temp->child.size()-1;i++){
             q.push(pNode(temp->child[i],false));
@@ -238,32 +238,49 @@ bool Search(node *tNode,int value){
 int main(){
     printf("How many values in each node?\n");
     FILE *fp;
-    fp = fopen("factura2.txt","r");
-    nPointer=100.0;
+    //fp = fopen("factura2.txt","r");
+    fp = fopen("part-00000-of-00500.csv","r");
+    nPointer=1000.0;   //CANTIDAD DE NODOS EN UN ARREGLO
     nVal = nPointer-1;
 
     printf("nPointer = %d\n",nPointer);
-    int k,len,c;
-
+    float len,c;
+    float k;
+    /*
     fseek ( fp , 2 , SEEK_CUR );
     fscanf(fp,"%d",&k);
     cout<<"K: "<<k<<endl;
     insert2(k,NULL);
+    */
+
+    int contador=0;
+    int campo=2;
     while((c=fgetc(fp))!=EOF){
+        if (c==','){
+        contador++;}
+        if (contador==campo){
+            fscanf(fp,"%f",&k);
+            len=ftell(fp);
+            insert2(k,NULL);
+        }
         if (c=='\n'){
+            contador=0;
+        }
+        /*
         fseek(fp,2,SEEK_CUR);
         fscanf(fp,"%d",&k);
         len = ftell(fp);
         insert2(k,NULL);
-        }
+        */
+
     }
     while(true){
         printf("Action: \npress 1 to insert\npress 2 to print in tree structure\npress 3 to search a value\npress 0 for exit\n");
         int choice;
         scanf("%d",&choice);
         if(choice==1){
-            int value;
-            scanf("%d",&value);
+            float value;
+            scanf("%f",&value);
             insert2(value,NULL);
         }else if(choice==2){
             printf("\n\n\n");
@@ -271,7 +288,7 @@ int main(){
             printf("\n\n\n");
         }
         else if(choice==3){
-            int num;
+            float num;
             unsigned t0,t1;
             cout<<"Que valor desea buscar: ";    cin>>num;
             t0=clock();
