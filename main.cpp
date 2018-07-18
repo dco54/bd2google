@@ -8,7 +8,7 @@ int nVal;
 int nPointer;
 struct feature{
     float index;
-    vector<string>content;
+    vector<float>content;
 };
 struct node {
     bool leaf;
@@ -37,8 +37,8 @@ node* getTargetNode(node *tNode, float val);
 node* getNewNode(bool isLeaf,bool isRoot);
 
 void insertInParentNode(node *n, float kprime, node *nprime);
-void insertInLeafNode(node *leafNode, float k, node *p,string cadena);
-void insert2(float k, node *p,string cadena);
+void insertInLeafNode(node *leafNode, float k, node *p,float cadena);
+void insert2(float k, node *p,float cadena);
 void valueOfNodeInBox(node* tNode);
 void bfsTraverse(node *tNode);
 void phDelete(node* N, float k, node* p);
@@ -59,22 +59,36 @@ void indexacion(int campo){
     float c;
     FILE *fp;
     fp = fopen("part-00000-of-00500.csv","r");
+    float i=0;
 
+    len=ftell(fp);
     while((c=fgetc(fp))!=EOF){
         if (c==','){
         contador++;}
         if (contador==campo){
+            //cout<<"LEN: "<<len<<endl;
             fscanf(fp,"%f",&k);
-            len=ftell(fp);
+            //printf("POS:  %f \n",len);
             //printf("VALOR: %f\n",k);
-            insert2(k,NULL,"hola");
+            insert2(k,NULL,len);
+            i++;
+            contador++;
         }
         if (c=='\n'){
             contador=0;
+            len=ftell(fp)-i;
+            //printf("POS:  %f \n",len);
+            //fseek(fp,len-1,SEEK_SET);   //
+            //fscanf(fp,"%f",&k);
+            //c=fgetc(fp);
+            //cout<<"inicio: "<<c<<endl;
+        //break;
 
         }
     }
+    printf("CANTIDAD: %f\n",i);
     fclose(fp);
+
 }
 
 int main(){
@@ -85,6 +99,15 @@ int main(){
     cout<<"nPointer: "<<nPointer<<endl;
 
     indexacion(2);
+
+    float c;
+    FILE *fp;
+    fp = fopen("part-00000-of-00500.csv","r");
+    fseek(fp,605822,SEEK_SET);
+    c=fgetc(fp);
+    printf("NUMERO: %f\n",c);
+    fclose(fp);
+
     while(true){
         printf("Action: \npress 1 to insert\npress 2 to print in tree structure\npress 3 for delete\npress 4 to search a value\npress 0 for exit\n");
         int choice;
@@ -92,7 +115,7 @@ int main(){
         if(choice==1){
             float value;
             cin>>value;
-            string cadena;    cin>>cadena;
+            float cadena;    cin>>cadena;
             insert2(value,NULL,cadena);
         }else if(choice==2){
             printf("\n\n\n");
@@ -103,7 +126,7 @@ int main(){
             scanf("%f",&delV);
             delet(delV,NULL);
         }else if(choice==4){
-            float indice;    cin>>indice;
+            float indice;    scanf("%f",&indice);
             if(Search(Root,indice))    cout<<"Founded Number\n";
             else    cout<<"Not Founded Number\n";
         }else if(choice==0) break;
@@ -195,12 +218,14 @@ void insertInParentNode(node *n, float kprime, node *nprime){
 }
 
 
-void insertInLeafNode(node *leafNode, float k, node *p,string cadena){
-    int i;
+void insertInLeafNode(node *leafNode, float k, node *p,float cadena){
+    float i;
     for(i=0;i<leafNode->value.size();i++){
-        if(k<=leafNode->value[i].index) break;
+        if(k<=leafNode->value[i].index){ break; }
     }
-
+    if((leafNode->value.size()!=0) && (leafNode->value[i].index == k)){
+        leafNode->value[i].content.push_back(cadena);    return;
+    }
     feature aux;    aux.index=k;    aux.content.push_back(cadena);
     feature tmpK;
     node *tmpP;
@@ -208,9 +233,6 @@ void insertInLeafNode(node *leafNode, float k, node *p,string cadena){
     for(int j = i; j<leafNode->value.size(); j++){
         tmpP = leafNode->child[j];
         tmpK = leafNode->value[j];
-        if(tmpK.index==k){
-            leafNode->value[j].content.push_back(cadena);    return;
-        }
         leafNode->child[j] = p;
         leafNode->value[j] = aux;
 
@@ -222,7 +244,7 @@ void insertInLeafNode(node *leafNode, float k, node *p,string cadena){
 }
 
 
-void insert2(float k, node *p,string cadena){
+void insert2(float k, node *p,float cadena){
     node *leafNode;
     if(Root==NULL){
         Root = getNewNode(true,true);
@@ -230,6 +252,7 @@ void insert2(float k, node *p,string cadena){
     }else leafNode = getTargetNode(Root,k);
     //printf("dbg: target node content:\n");
     //if(leafNode->value.size()>0) bfsTraverse(leafNode);
+
 
     float keyValueCount = leafNode->value.size();
     if(keyValueCount<nVal) insertInLeafNode(leafNode,k,p,cadena);
@@ -271,10 +294,10 @@ void valueOfNodeInBox(node* tNode){
     float i ;
      for(i=0; i<tNode->value.size()-1;i++){
         //printf("%d|",tNode->value[i].index);
-        cout<<tNode->value[i].index<<"|";
+        printf("%f|",tNode->value[i].index);
     }
     if(tNode->value.size()>0) //printf("%d]",tNode->value[i].index);
-        cout<<tNode->value[i].index<<"]";
+        printf("%f]",tNode->value[i].index);
     //printf(" ");
 }
 
@@ -509,24 +532,22 @@ bool isCoalesce(node *N, node *Nprime){
 
 bool valueOfNodeInBoxRec(node* tNode,float value){
     if (tNode->leaf==0)    return false;
-     for(float i=0; i<tNode->value.size();i++){
-        if (tNode->value[i].index==value){
-            for(int j=0;j<tNode->value[i].content.size();j++){
+    for(int i=0; i<tNode->value.size();i++){
+        if (tNode->value[i].index == value){
             return true;
         }
     }
     return false;
-    }
 }
 
 
 bool valueOfNodeInBoxSearch(node* tNode,float value){
     if (tNode->leaf==0)    return false;
      for(float i=0; i<tNode->value.size();i++){
-        if (tNode->value[i].index==value){
-            cout<<"Indice: "<<tNode->value[i].index<<endl;
+        if (tNode->value[i].index == value){
+            printf("Indice: %f\n",tNode->value[i].index);
             for(int j=0;j<tNode->value[i].content.size();j++){
-                cout<<"Referencia: "<<tNode->value[i].content[j]<<endl;}
+                printf("Referencia: %f\n",tNode->value[i].content[j]);}
             return true;
 
         }
@@ -560,3 +581,4 @@ bool Search(node *tNode,float value){
     }
     return false;
 }
+
