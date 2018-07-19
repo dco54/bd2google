@@ -39,7 +39,7 @@ node* getTargetNode(node *tNode, long long int val);
 node* getNewNode(bool isLeaf,bool isRoot);
 
 void insertInParentNode(node *n, long long int kprime, node *nprime);
-void insertInLeafNode(node *leafNode, long long int k, node *p,long long int cadena);
+void insertInLeafNode(node *leafNode, long long int k, node *p,string fichero,long long int cadena);
 void insert2(long long int k, node *p,string fichero,vector<long long int> referencias);
 void valueOfNodeInBox(node* tNode);
 void bfsTraverse(node *tNode);
@@ -52,39 +52,38 @@ bool isCoalesce(node *N, node *Nprime);
 /* MIO */
 bool valueOfNodeInBoxSearch(node* tNode,long long int value);
 bool Search(node *tNode,long long int value);
-bool valueOfNodeInBoxRec(node* tNode,long long int value);
+feature buscarDato(node *tNode,long long int indice);
 
-
-void indexacion(string fichero){  //agarra hasta 18 digitos
+void indexacion(string fichero){
     ifstream archivo(fichero,std::ifstream::binary);
     long long int ind;
     string refe;
     vector<long long int> cont;
 
     if (archivo){
+        int tam=fichero.size();
+        fichero[tam-3]='c';
+        fichero[tam-2]='s';
+        fichero[tam-1]='v';
         char *buffer=new char[200];
         while(!archivo.eof()){
 
             archivo.getline(buffer,200,'|');
             ind=atoll(buffer);
-            cout<<"Indice: "<<ind<<endl;
-
-            archivo.getline(buffer,50,'|');
-            refe=buffer;
-            cout<<"REFERENCIA: "<<refe<<endl;
+            //cout<<"Indice: "<<ind<<endl;
 
             archivo.getline(buffer,5,'|');
             long long int cantidad=atoll(buffer);
-            cout<<"CANTIDAD: "<<cantidad<<endl;
+            //cout<<"CANTIDAD: "<<cantidad<<endl;
 
-            //archivo.getline(buffer,50,'|');
-
-            for(int k=0;k<cantidad;k++){
+            for(long long int k=0;k<cantidad;k++){
                 archivo.getline(buffer,15,'|');
                 long long int numero=atoll(buffer);
-                cout<<"NUMERO: "<<numero<<endl;
+                cont.push_back(numero);
+
             }
-            //insert2(ind,NULL,refe,cont);
+            insert2(ind,NULL,fichero,cont);
+            cont.clear();
 
         }
         delete[] buffer;
@@ -93,9 +92,71 @@ void indexacion(string fichero){  //agarra hasta 18 digitos
     else{
         cout<<"El archivo no existe.\n";
     }
-
-
 }
+string dato(feature hola){
+    string fichero=hola.archivo;
+    char *buffer=new char[500];
+    ifstream archivo(fichero,std::ifstream::binary);
+    archivo.seekg(hola.content[0]);
+    archivo.getline(buffer,500,'\n');
+    string rpta=buffer;
+    return rpta;
+}
+
+
+
+
+
+void inser(string s,int campos)
+{
+    fstream fi;
+    fi.open("Tabla1/nuevo.csv");
+    int con=0,i=0;
+    fi.seekg(0,fi.end);
+
+    for(int i=0; i<s.size() ; i++)
+    {
+        if(s[i]==',')
+        {
+            con++;
+        }
+    }
+    if(con!=campos-1)
+    {
+        cout<<"Error: numero incorrecto de campos "<<endl;
+        return;
+    }
+    else
+    {
+        fi<<s<<endl;
+    }
+}
+
+void delet(feature hola)
+{
+    cout<<hola.archivo<<endl;
+    cout<<hola.content[0]<<endl;
+
+    string s;
+    string fichero=hola.archivo;
+    fstream fi;
+    fi.open(fichero);
+    fi.seekp(0,fi.beg);
+    //cout<<fi.tellp()<<endl;
+    int pos=hola.content[0];
+    fi.seekp(pos,fi.cur);
+    getline(fi,s);
+    int tam=s.size();
+    fi.seekp(0,fi.beg);
+    fi.seekp(pos,fi.cur);
+    s="";
+    for(int i=0; i<tam; i++)
+    {
+        s+=' ';
+    }
+    fi<<s;
+}
+
 
 int main(){
     printf("How many values in each node?\n");
@@ -103,25 +164,54 @@ int main(){
     nPointer = 100;
     nVal = nPointer-1;
     cout<<"nPointer: "<<nPointer<<endl;
+    string fichero="Tabla1/part-00000-of-00500.txt";
+    int i=1;
+    while (i<500){
+        indexacion(fichero);
+        string cero="",token=to_string(i);
+        if(i<=9){
+            cero="0000";
+        }else if(i>9 && i<=99){cero="000";}
+        else if(i>99 && i<=999){cero="00";}
+        fichero="Tabla1/part-"+cero+token+"-of-00500.txt";
+        i++;
+    }
 
-    string fichero="indexado.txt";
-    indexacion(fichero);
+    /*
+    feature A;
+    A=buscarDato(Root,6440283993);
+    cout<<"\nIndice: "<<A.index;
+    cout<<"\nFichero: "<<A.archivo;
+    cout<<"\nReferencia: ";    for(long long int k=0;k<A.content.size();k++)     cout<<A.content[k]<<"|";
+    string cadenita=dato(A);
+    cout<<"\nContenido: "<<cadenita;
+    */
+
 
     while(true){
-        printf("Action: \npress 1 to insert\npress 2 to print in tree structure\npress 3 for delete\npress 4 to search a value\npress 0 for exit\n");
+        printf("\nAction: \npress 1 to insert\npress 3 to delet\n npress 4 to search a value\npress 0 for exit\n");
         int choice;
         cin>>choice;
+        if (choice==1){
+            string nuevacadena;
+            cin>>nuevacadena;
+            inser(nuevacadena,8);
+        }
+        if(choice==3){
+            long long int indiceborrar;    cin>>indiceborrar;
+            feature borrar=buscarDato(Root,indiceborrar);
+            delet(borrar);
+        }
         if(choice==2){
             printf("\n\n\n");
             bfsTraverse(Root);
             printf("\n\n\n");
         }else if(choice==4){
             long long int indice;    cin>>indice;
-            if(Search(Root,indice))    cout<<"Founded Number\n";
-            else    cout<<"Not Founded Number\n";
+            if(Search(Root,indice))    cout<<"\nFounded Number\n";
+            else    cout<<"\nNot Founded Number\n";
         }else if(choice==0) break;
     }
-    //fclose(fp);
     return 0;
 }
 node* getTargetNode(node *tNode, long long int val){
@@ -207,7 +297,6 @@ void insertInParentNode(node *n, long long int kprime, node *nprime){
 
 }
 
-
 void insertInLeafNode(node *leafNode, long long int k, node *p,string fichero,vector<long long int> referencias){
     long long int i;
     for(i=0;i<leafNode->value.size();i++){
@@ -266,11 +355,6 @@ void insert2(long long int k, node *p,string fichero,vector<long long int> refer
         leafNode->value.erase(leafNode->value.begin()+nbytwoceil,leafNode->value.end());
         leafNode->child.erase(leafNode->child.begin()+nbytwoceil,leafNode->child.end());
 
-        //printf("dbg: leafnode split complete\n");
-        //printf("dbg: leafnode1 content:\n");
-       // bfsTraverse(leafNode);
-        //printf("dbg: leafnode2 content:\n");
-        //bfsTraverse(leafNode2);
 
         long long int kprime = leafNode2->value[0].index;
         insertInParentNode(leafNode,kprime,leafNode2);
@@ -315,18 +399,6 @@ void bfsTraverse(node *tNode){
     }
 }
 
-void phDelete(node* N, long long int k, node* p){
-    int i;
-    for(i=0;i<N->value.size();i++){
-        if(N->value[i].index==k) break;
-    }
-    N->value.erase(N->value.begin()+i);
-    if(!N->leaf) N->child.erase(N->child.begin()+i+1);
-    printf("After ph delete contentent: \n");
-    if(N->value.size()>0)bfsTraverse(N);
-}
-
-
 bool tooFewEntry(node *N){
 
     if(N->leaf){
@@ -339,192 +411,7 @@ bool tooFewEntry(node *N){
     return false;
 }
 
-void deleteEntry(node* N, long long int k, node* p){
-    phDelete(N,k,p);
-    if(N->isRoot && N->child.size()==1){
-      Root = N->child[0];
-      Root->par = NULL;
-      Root->isRoot = true;
-    }
-    if(tooFewEntry(N) && !N->isRoot){
-        printf("too few entry\n");
-        node *parN = N->par;
-        int i;
-        for(i=0;i<parN->child.size();i++){
-            if(parN->child[i]==N) break;
-        }
-        printf("dbg: The node is %dth child of its parent\n",i);
-        printf("dbg: parent has %d childs\n",parN->child.size());
-
-        node *leftSib, *rightSib, *Nprime;
-        bool left;
-        if(i>0) leftSib = parN->child[i-1];
-        else leftSib = NULL;
-
-        if(i<parN->child.size()-1) rightSib = parN->child[i+1];
-        else rightSib = NULL;
-
-        if(leftSib==NULL) left=false;
-        else if(rightSib==NULL) left = true;
-        else if(leftSib->value.size()>rightSib->value.size()) left=false;
-        else left = true;
-        long long int kprime;
-
-        if(left){
-            Nprime = leftSib;
-            kprime = parN->value[i-1].index;
-            printf("Left sibling selected\n");
-        }
-        else {
-            Nprime = rightSib;
-            kprime = parN->value[i].index;
-            printf("Right sibling selected\n");
-        }
-        printf("kprime %f\n",kprime);
-
-        //int totalValue = N->child.size()+Nprime->child.size();
-        //printf("dbg: totalValue: %d\n",totalValue);
-        if(isCoalesce(N,Nprime)){
-                printf("Coalesce\n");
-                if(!left){
-                    node *tmp = N;
-                    N = Nprime;
-                    Nprime = tmp;
-                }
-               // printf("reached after swap\n");
-                if(!N->leaf){
-                    Nprime->value.push_back({kprime});
-                    int j;
-                    for(j = 0; j<N->value.size();j++){
-                        Nprime->child.push_back(N->child[j]);
-                        Nprime->value.push_back(N->value[j]);
-                        N->child[j]->par = Nprime;
-                    }
-                    Nprime->child.push_back(N->child[j]);
-                    N->child[j]->par = Nprime;
-                    //printf("reached not leaf complete\n");
-                }else{
-                     //printf("reached leaf start\n");
-                    // printf("Content of N\n");
-                     //bfsTraverse(N);
-                     printf("Content of Nprime(before)\n");
-                     bfsTraverse(Nprime);
-
-
-
-                    for(int j = 0; j<N->value.size();j++){
-                        Nprime->value.push_back(N->value[j]);
-                        ///Nprime->child.push_back(N->child[j]);
-                        ///N->child[j]->par = Nprime;
-                    }
-                     //printf("reached leaf after loop\n");
-                     Nprime->last = N->last;
-                    //printf("reached leaf complete\n");
-                }
-                printf("Nprime content(after): \n");
-                bfsTraverse(Nprime);
-                deleteEntry(parN,kprime,N);
-
-        }else{
-                printf("dbg: Redistribute\n");
-
-                printf("dbg: content of Nprime\n");
-                bfsTraverse(Nprime);
-
-                if(left){
-                    printf("dbg: redistribute for left\n");
-
-                    if(!N->leaf){
-                        long long int m = Nprime->child.size()-1;
-                        long long int tmpV = Nprime->value[m-1].index;
-                        node *tmpP = Nprime->child[m];
-                        Nprime->child.erase(Nprime->child.begin()+m);
-                        Nprime->value.erase(Nprime->value.begin()+m-1);
-                        N->child.insert(N->child.begin(),tmpP);
-                        N->value.insert(N->value.begin(),{kprime});
-                        parN->value[i-1].index = tmpV;//???
-                      // parN->value[i-1] = N->
-                    }else{
-                        long long int m = Nprime->value.size()-1;
-                        long long int tmpV = Nprime->value[m].index;
-                        ///node *tmpP = Nprime->child[m];
-                        ///Nprime->child.erase(Nprime->child.begin()+m);
-                        Nprime->value.erase(Nprime->value.begin()+m);
-                        ///N->child.insert(N->child.begin(),tmpP);
-                        N->value.insert(N->value.begin(),{tmpV});
-                        parN->value[i-1].index = tmpV;
-                    }
-                }else{
-
-                    if(!N->leaf){
-                        long long int m = 0;
-                        long long int tmpV = Nprime->value[m].index;
-                        node *tmpP = Nprime->child[m];
-
-                        Nprime->child.erase(Nprime->child.begin()+m);
-                        Nprime->value.erase(Nprime->value.begin()+m);
-
-                        N->child.push_back(tmpP);
-                        N->value.push_back({kprime});
-
-                       // N->child.insert(N->child.begin(),tmpP);
-                        //N->value.insert(N->value.begin(),kprime);
-
-                        parN->value[i-1].index = tmpV;
-                    }else{
-                        long long int m = 0;
-                        long long int tmpV = Nprime->value[m].index;
-                        ///node *tmpP = Nprime->child[m];
-                        ///Nprime->child.erase(Nprime->child.begin()+m);
-                        Nprime->value.erase(Nprime->value.begin());
-                        ///N->child.insert(N->child.begin(),tmpP);
-                       // N->value.insert(N->value.begin(),tmpV);
-                        N->value.push_back({tmpV});
-                        parN->value[i] = Nprime->value[0];
-                    }
-
-                }
-        }
-
-
-    }else{
-        printf("Enough Entry\n");
-    }
-
-}
-
-void delet(long long int k, node* p){
-    node *L = getTargetNode(Root,k);
-    printf("content: \n");
-    bfsTraverse(L);
-    deleteEntry(L,k,p);
-
-}
-
-
-bool isCoalesce(node *N, node *Nprime){
-    if(N->leaf){
-        if(nVal>=(N->value.size()+Nprime->value.size())) return true;
-        return false;
-    }
-    if(nPointer>=(N->child.size()+Nprime->child.size())) return true;
-    return false;
-}
-
-
-
 /* MIO NO SE SI TARA BIEN */
-
-bool valueOfNodeInBoxRec(node* tNode,long long int value){
-    if (tNode->leaf==0)    return false;
-    for(int i=0; i<tNode->value.size();i++){
-        if (tNode->value[i].index == value){
-            return true;
-        }
-    }
-    return false;
-}
-
 
 bool valueOfNodeInBoxSearch(node* tNode,long long int value){
     if (tNode->leaf==0)    return false;
@@ -534,7 +421,8 @@ bool valueOfNodeInBoxSearch(node* tNode,long long int value){
             cout<<"Fichero: "<<tNode->value[i].archivo<<endl;
             cout<<"Referencia: ";
             for(long long int j=0;j<tNode->value[i].content.size();j++){
-                cout<<tNode->value[i].content[j]<<"|"<<endl;
+                cout<<tNode->value[i].content[j]<<"|";
+            cout<<dato(tNode->value[i]);
             }
             return true;
         }
@@ -564,5 +452,44 @@ bool Search(node *tNode,long long int value){
 
     }
     return false;
+}
+feature valueOfNodeInBoxS(node* tNode,long long int value){
+    if (tNode->leaf==true){
+        for(long long int i=0;i<tNode->value.size();i++){
+            if (tNode->value[i].index == value){
+            return tNode->value[i];
+            }
+        }
+    }
+}
+
+feature buscarDato(node *tNode,long long int indice){
+    feature rpta;
+    q.push(pNode(tNode,true));
+    while(!q.empty()){
+        pNode p = q.front();
+        //printf("  Got pNode ");
+        node *temp = p.tNode;
+        q.pop();
+
+        if (temp->leaf==true){
+        for(long long int j=0;j<temp->value.size();j++){
+            if (temp->value[j].index == indice){
+            return temp->value[j];
+            }
+        }
+        }
+
+        int i;
+        if(!temp->leaf){
+        for(i=0;i<temp->child.size()-1;i++){
+            q.push(pNode(temp->child[i],false));
+        }
+        if(p.nl) q.push(pNode(temp->child[i],true));
+        else q.push(pNode(temp->child[i],false));
+        }
+    }
+    cout<<"Numero no encontrado";
+    return rpta;
 }
 
